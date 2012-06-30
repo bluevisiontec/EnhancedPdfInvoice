@@ -1,0 +1,4 @@
+EnhancedPdfInvoice
+==================
+
+Magento Module EnhancedPdfInvoice
