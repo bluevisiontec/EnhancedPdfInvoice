@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <BlueVisionTec_EnhancedPdfInvoice>
+            <active>true</active>
+            <codePool>community</codePool>          
+        </BlueVisionTec_EnhancedPdfInvoice>
+    </modules>
+</config>

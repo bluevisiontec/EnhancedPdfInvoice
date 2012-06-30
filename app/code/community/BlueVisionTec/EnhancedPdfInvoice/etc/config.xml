@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<config>
+  <modules>
+    <BlueVisionTec_EnhancedPdfInvoice>
+      <version>0.0.1</version>
+    </BlueVisionTec_EnhancedPdfInvoice>
+  </modules>
+  
+  <global>       
+    <models>
+      <enhancedpdfinvoice>
+          <class>BlueVisionTec_EnhancedPdfInvoice_Model</class>
+      </enhancedpdfinvoice>
+      <sales>
+        <rewrite>
+          <order_pdf_invoice>BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice</order_pdf_invoice>
+        </rewrite>
+      </sales>
+    </models>
+    <blocks>
+      <enhancedpdfinvoice>
+        <class>BlueVisionTec_EnhancedPdfInvoice_Block</class>
+      </enhancedpdfinvoice>
+    </blocks>
+    <helpers>
+      <enhancedpdfinvoice>
+        <class>BlueVisionTec_EnhancedPdfInvoice_Helper</class>
+      </enhancedpdfinvoice>
+    </helpers>
+  </global>
+  
+  <adminhtml>
+    <acl>
+        <resources>
+            <admin>
+                <children>
+                    <system>
+                        <children>
+                            <config>
+                                <children>
+                                    <bvt_enhancedpdfinvoice_config>
+                                        <title>EnhancedPdfInvoice config</title>
+                                    </bvt_enhancedpdfinvoice_config>
+                                </children>
+                            </config>
+                        </children>
+                    </system>
+                </children>
+            </admin>
+        </resources>
+    </acl>
+  </adminhtml>
+  
+  <default>
+    <bvt_enhancedpdfinvoice_config>
+      <design_settings>
+        <font_type>Helvetica</font_type>
+      </design_settings>
+    </bvt_enhancedpdfinvoice_config>
+  </default>
+</config>
