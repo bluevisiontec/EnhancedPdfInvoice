@@ -55,7 +55,7 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
    * 
    * @var int
    */
-  protected $_iFullPageWith = 595;
+  protected $_iFullPageWith = 590;
   
   /**
    * full page height
@@ -69,7 +69,7 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
    * 
    * @var int
    */
-  protected $_iLeftMargin = 25;
+  protected $_iLeftMargin = 60;
   
   /**
    * right page margin
@@ -165,10 +165,112 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
   */
   protected function _setFontItalic($object, $size = 7)
   {
-    $font = Zend_Pdf_Font::fontWithName(Mage::getStoreConfig("bvt_enhancedpdfinvoice_config/design_settings/font_type")."-Italic");
+    $sItalic = (Mage::getStoreConfig("bvt_enhancedpdfinvoice_config/design_settings/font_type") == "Helvetica") ? "-Oblique" : "-Italic";
+    $font = Zend_Pdf_Font::fontWithName(Mage::getStoreConfig("bvt_enhancedpdfinvoice_config/design_settings/font_type").$sItalic);
     $object->setFont($font, $size);
     return $font;
   }
+  
+  public function newPage()
+  {
+    $oPage = parent::newPage();
+    $oPage = $this->_drawFoldingMarks($oPage);
+    return $oPage;
+  }
+  
+  protected function _drawFoldingMarks($oPage)
+  {
+    $iWidth = 14;
+    
+    $oPage->setFillColor(new Zend_Pdf_Color_GrayScale(0));
+    $oPage->setLineWidth(0);
+    
+    $x1 = $iWidth;
+    $x2 = $x1 + $iWidth * 2;
+    $y1 = 246;
+    $y2 = $y1;
+                    
+    $oPage->drawLine($x1,$y1,$x2,$y2);
+    
+    $x1 = $iWidth * 2;
+    $x2 = $x1 + $iWidth;
+    $y1 = 420;
+    $y2 = $y1;
+                    
+    $oPage->drawLine($x1,$y1,$x2,$y2);
+    
+    $x1 = $iWidth;
+    $x2 = $x1 + $iWidth * 2;
+    $y1 = 544;
+    $y2 = $y1;
+                    
+    $oPage->drawLine($x1,$y1,$x2,$y2);
+    
+    return $oPage;
+  }
+  
+  /**
+     * Draw header for item table
+     *
+     * @param Zend_Pdf_Page $page
+     * @return void
+     */
+    protected function _drawHeader(Zend_Pdf_Page $page)
+    {
+        /* Add table head */
+        $this->_setFontRegular($page, 10);
+        $page->setFillColor(new Zend_Pdf_Color_GrayScale(1));
+        $page->setLineColor(new Zend_Pdf_Color_RGB(0.8, 0.8, 0.8));
+        $page->setLineWidth(0.5);
+        $page->drawRectangle(60, $this->y, 560, $this->y -15);
+        $this->y -= 10;
+        $page->setFillColor(new Zend_Pdf_Color_RGB(0, 0, 0));
+
+        $lines[0][] = array(
+            'text'  => Mage::helper('enhancedpdfinvoice')->__('SKU '),
+            'feed'  => 70,
+            'align' => 'left'
+        );
+        
+        //columns headers
+        $lines[0][] = array(
+            'text' => Mage::helper('sales')->__('Products'),
+            'feed' => 135
+        );
+
+        $lines[0][] = array(
+            'text'  => Mage::helper('sales')->__('Qty'),
+            'feed'  => 415,
+            'align' => 'left'
+        );
+
+        $lines[0][] = array(
+            'text'  => Mage::helper('sales')->__('Single Price'),
+            'feed'  => 350,
+            'align' => 'left'
+        );
+
+        $lines[0][] = array(
+            'text'  => Mage::helper('sales')->__('Tax'),
+            'feed'  => 455,
+            'align' => 'left'
+        );
+
+        $lines[0][] = array(
+            'text'  => Mage::helper('sales')->__('Price'),
+            'feed'  => 525,
+            'align' => 'left'
+        );
+
+        $lineBlock = array(
+            'lines'  => $lines,
+            'height' => 5
+        );
+
+        $this->drawLineBlocks($page, array($lineBlock), array('table_header' => true));
+        $page->setFillColor(new Zend_Pdf_Color_GrayScale(0));
+        $this->y -= 20;
+    }
   
   /**
   * Return PDF document
@@ -199,7 +301,7 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
           $this->insertAddress($page, $invoice->getStore());
           /* Add head */
 
-          $this->_insertOrder(
+          $this->_insertOrderHead(
               $page,
               $order,
               $invoice,
@@ -227,6 +329,8 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
           if ($invoice->getStoreId()) {
               Mage::app()->getLocale()->revert();
           }
+          
+          $this->_insertPaymentInfo($page, $order);
       }
       $this->_afterGetPdf();
       return $pdf;
@@ -309,15 +413,15 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
       $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/zip', $store)));
       $sStoreAdress .=  " ";
       $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/city', $store)));
-      $sStoreAdress .=  $this->_sSeparatorSign;
-      $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/web', $store)));
+      //$sStoreAdress .=  $this->_sSeparatorSign;
+      //$sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/web', $store)));
 
       $page->drawText(trim(strip_tags($sStoreAdress)),
                       $this->_logoRight + 5,
                       $this->_logoBottom + 10,
                       'UTF-8');
                       
-      $x1 = $this->_logoRight + 5;
+      $x1 = $this->_iLeftMargin;
       $x2 = $this->_iFullPageWith - $this->_iRightMargin;
       $y1 = $this->_logoBottom + 8;
       $y2 = $y1;
@@ -333,15 +437,15 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
    * @param Zend_Pdf_Page $oPage
    * @param Mage_Sales_Model_Order $oOrder
    */
-  protected function insertCustomerBillingAddress(&$oPage, $oOrder)
+  protected function insertCustomerBillingAddress(&$oPage, $oOrder,$oInvoice = null)
   {
     $oPage->setFillColor(new Zend_Pdf_Color_GrayScale(0));
     $font = $this->_setFontRegular($oPage, 7);
     $oPage->setLineWidth(0);
-    
-    $sStoreAdress = trim(strip_tags(Mage::getStoreConfig('general/imprint/shop_name', $store)));
-    $sStoreAdress .=  $this->_sSeparatorSign;
-    $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/company_first', $store)));
+    $store = $oInvoice->getStore();
+    //$sStoreAdress = trim(strip_tags(Mage::getStoreConfig('general/imprint/shop_name', $store)));
+    //$sStoreAdress .=  $this->_sSeparatorSign;
+    $sStoreAdress = trim(strip_tags(Mage::getStoreConfig('general/imprint/company_first', $store)));
     $sStoreAdress .=  $this->_sSeparatorSign;
     $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/street', $store)));
     $sStoreAdress .=  $this->_sSeparatorSign;
@@ -407,6 +511,147 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
   }
   
   /**
+    * Insert payment info to pdf page
+    *
+    * @param Zend_Pdf_Page $page
+    * @param Mage_Sales_Model_Order $order
+    */
+  protected function _insertPaymentInfo(&$page, $order)
+  {
+    $top = $this->y;
+    /* Payment */
+    $paymentInfo = Mage::helper('payment')->getInfoBlock($order->getPayment())
+        ->setIsSecureMode(true)
+        ->toPdf();
+    $paymentInfo = htmlspecialchars_decode($paymentInfo, ENT_QUOTES);
+    $payment = explode('{{pdf_row_separator}}', $paymentInfo);
+    foreach ($payment as $key=>$value){
+        if (strip_tags(trim($value)) == '') {
+            unset($payment[$key]);
+        }
+    }
+    reset($payment);
+
+    $this->y = $top - 40;
+
+    if (!$order->getIsVirtual()) {
+
+        $page->setFillColor(new Zend_Pdf_Color_Rgb(0.93, 0.92, 0.92));
+        $page->setLineWidth(0.5);
+        $page->drawRectangle($this->_iLeftMargin, $this->y, 275, $this->y-25);
+        $page->drawRectangle(275, $this->y, 560, $this->y-25);
+
+        $this->y -= 15;
+        $this->_setFontBold($page, 12);
+        $page->setFillColor(new Zend_Pdf_Color_GrayScale(0));
+        $page->drawText(Mage::helper('sales')->__('Payment Method'), $this->_iLeftMargin + 10, $this->y, 'UTF-8');
+        $page->drawText(Mage::helper('sales')->__('Shipping Method:'), 285, $this->y , 'UTF-8');
+
+        $this->y -=10;
+        $page->setFillColor(new Zend_Pdf_Color_GrayScale(1));
+
+        $this->_setFontRegular($page, 10);
+        $page->setFillColor(new Zend_Pdf_Color_GrayScale(0));
+
+        $paymentLeft = $this->_iLeftMargin + 10;
+        $yPayments   = $this->y - 15;
+    }
+    else {
+        $yPayments   = $this->y;
+        $paymentLeft = 285;
+    }
+
+    foreach ($payment as $value){
+        if (trim($value) != '') {
+            //Printing "Payment Method" lines
+            $value = preg_replace('/<br[^>]*>/i', "\n", $value);
+            foreach (Mage::helper('core/string')->str_split($value, 45, true, true) as $_value) {
+                $page->drawText(strip_tags(trim($_value)), $paymentLeft, $yPayments, 'UTF-8');
+                $yPayments -= 12;
+            }
+        }
+    }
+
+    if ($order->getIsVirtual()) {
+        // replacement of Shipments-Payments rectangle block
+        $yPayments = min($this->y, $yPayments);
+        $page->drawLine($this->_iLeftMargin,  ($top - 25), 25,  $yPayments);
+        $page->drawLine(570, ($top - 25), 570, $yPayments);
+        $page->drawLine($this->_iLeftMargin,  $yPayments,  570, $yPayments);
+
+        $this->y = $yPayments - 15;
+    } else {
+        $topMargin    = 15;
+        $methodStartY = $this->y;
+        $this->y     -= 15;
+
+        foreach (Mage::helper('core/string')->str_split($shippingMethod, 45, true, true) as $_value) {
+            $page->drawText(strip_tags(trim($_value)), 285, $this->y, 'UTF-8');
+            $this->y -= 15;
+        }
+
+        $yShipments = $this->y;
+        $totalShippingChargesText = "(" . Mage::helper('sales')->__('Total Shipping Charges') . " "
+            . $order->formatPriceTxt($order->getShippingAmount()) . ")";
+
+        $page->drawText($totalShippingChargesText, 285, $yShipments - $topMargin, 'UTF-8');
+        $yShipments -= $topMargin + 10;
+
+        $tracks = array();
+        if ($shipment) {
+            $tracks = $shipment->getAllTracks();
+        }
+        if (count($tracks)) {
+            $page->setFillColor(new Zend_Pdf_Color_Rgb(0.93, 0.92, 0.92));
+            $page->setLineWidth(0.5);
+            $page->drawRectangle(285, $yShipments, 510, $yShipments - 10);
+            $page->drawLine(400, $yShipments, 400, $yShipments - 10);
+            //$page->drawLine(510, $yShipments, 510, $yShipments - 10);
+
+            $this->_setFontRegular($page, 9);
+            $page->setFillColor(new Zend_Pdf_Color_GrayScale(0));
+            //$page->drawText(Mage::helper('sales')->__('Carrier'), 290, $yShipments - 7 , 'UTF-8');
+            $page->drawText(Mage::helper('sales')->__('Title'), 290, $yShipments - 7, 'UTF-8');
+            $page->drawText(Mage::helper('sales')->__('Number'), 410, $yShipments - 7, 'UTF-8');
+
+            $yShipments -= 20;
+            $this->_setFontRegular($page, 8);
+            foreach ($tracks as $track) {
+
+                $CarrierCode = $track->getCarrierCode();
+                if ($CarrierCode != 'custom') {
+                    $carrier = Mage::getSingleton('shipping/config')->getCarrierInstance($CarrierCode);
+                    $carrierTitle = $carrier->getConfigData('title');
+                } else {
+                    $carrierTitle = Mage::helper('sales')->__('Custom Value');
+                }
+
+                //$truncatedCarrierTitle = substr($carrierTitle, 0, 35) . (strlen($carrierTitle) > 35 ? '...' : '');
+                $maxTitleLen = 45;
+                $endOfTitle = strlen($track->getTitle()) > $maxTitleLen ? '...' : '';
+                $truncatedTitle = substr($track->getTitle(), 0, $maxTitleLen) . $endOfTitle;
+                //$page->drawText($truncatedCarrierTitle, 285, $yShipments , 'UTF-8');
+                $page->drawText($truncatedTitle, 292, $yShipments , 'UTF-8');
+                $page->drawText($track->getNumber(), 410, $yShipments , 'UTF-8');
+                $yShipments -= $topMargin - 5;
+            }
+        } else {
+            $yShipments -= $topMargin - 5;
+        }
+
+        $currentY = min($yPayments, $yShipments);
+
+        // replacement of Shipments-Payments rectangle block
+        $page->drawLine($this->_iLeftMargin,  $methodStartY, $this->_iLeftMargin,  $currentY); //left
+        $page->drawLine($this->_iLeftMargin,  $currentY,     570, $currentY); //bottom
+        $page->drawLine(570, $currentY,     570, $methodStartY); //right
+
+        $this->y = $currentY;
+        $this->y -= 15;
+    }
+  }
+  
+  /**
     * Insert order to pdf page
     *
     * @param Zend_Pdf_Page $page
@@ -414,7 +659,7 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
     * @param Mage_Sales_Model_Invoice $invoice
     * @param bool $putOrderId
     */
-  protected function _insertOrder(&$page, $obj, $oInvoice, $putOrderId = true)
+  protected function _insertOrderHead(&$page, $obj, $oInvoice, $putOrderId = true)
   {
       if ($obj instanceof Mage_Sales_Model_Order) {
           $shipment = null;
@@ -424,7 +669,7 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
           $order = $shipment->getOrder();
       }
 
-      $this->insertCustomerBillingAddress($page,$order);
+      $this->insertCustomerBillingAddress($page,$order,$oInvoice);
       
       $this->y = $this->y ? $this->y : $this->_iFullPageHeight - $this->_iTopMargin - $this->_iLetterWindowTop - $this->_iLetterWindowHeight -10;
 
@@ -435,8 +680,17 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
               Mage::helper('sales')->__('Invoice'), $this->_iLeftMargin, $this->y, 'UTF-8'
           );
           
-      $this->y -= 20;
-      
+      if($putOrderId)
+      {
+        $font = $this->_setFontBold($page, 10);
+        $sOrderNumber = Mage::helper('sales')->__('Order #').$order->getIncrementId();
+        $iWidth = $this->widthForStringUsingFontSize($sOrderNumber, $font, 10);
+        $page->drawText(
+                $sOrderNumber, ($this->_iFullPageWith - $this->_iRightMargin) - $iWidth, $this->y, 'UTF-8'
+            );
+      }
+          
+      $this->y -= 20;      
       
       $font = $this->_setFontBold($page, 10);
       
@@ -470,155 +724,7 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
       
       $this->y -= 10;
 
-      $top = $this->y;
-      /*if ($putOrderId) {
-          $page->drawText(
-              Mage::helper('sales')->__('Order # ') . $order->getRealOrderId(), 35, ($top -= 30), 'UTF-8'
-          );
-      }*/
-
-      $top -= 10;
-      
-
-      /* Payment */
-      $paymentInfo = Mage::helper('payment')->getInfoBlock($order->getPayment())
-          ->setIsSecureMode(true)
-          ->toPdf();
-      $paymentInfo = htmlspecialchars_decode($paymentInfo, ENT_QUOTES);
-      $payment = explode('{{pdf_row_separator}}', $paymentInfo);
-      foreach ($payment as $key=>$value){
-          if (strip_tags(trim($value)) == '') {
-              unset($payment[$key]);
-          }
-      }
-      reset($payment);
-
-      /* Shipping Address and Method */
-      if (!$order->getIsVirtual()) {
-          /* Shipping Address */
-          $shippingAddress = $this->_formatAddress($order->getShippingAddress()->format('pdf'));
-          $shippingMethod  = $order->getShippingDescription();
-      }
-
-      $page->setFillColor(new Zend_Pdf_Color_GrayScale(0));
-
-      $this->_setFontRegular($page, 10);
-
-      if (!$order->getIsVirtual()) {
-
-          $page->setFillColor(new Zend_Pdf_Color_Rgb(0.93, 0.92, 0.92));
-          $page->setLineWidth(0.5);
-          $page->drawRectangle(25, $this->y, 275, $this->y-25);
-          $page->drawRectangle(275, $this->y, 570, $this->y-25);
-
-          $this->y -= 15;
-          $this->_setFontBold($page, 12);
-          $page->setFillColor(new Zend_Pdf_Color_GrayScale(0));
-          $page->drawText(Mage::helper('sales')->__('Payment Method'), 35, $this->y, 'UTF-8');
-          $page->drawText(Mage::helper('sales')->__('Shipping Method:'), 285, $this->y , 'UTF-8');
-
-          $this->y -=10;
-          $page->setFillColor(new Zend_Pdf_Color_GrayScale(1));
-
-          $this->_setFontRegular($page, 10);
-          $page->setFillColor(new Zend_Pdf_Color_GrayScale(0));
-
-          $paymentLeft = 35;
-          $yPayments   = $this->y - 15;
-      }
-      else {
-          $yPayments   = $addressesStartY;
-          $paymentLeft = 285;
-      }
-
-      foreach ($payment as $value){
-          if (trim($value) != '') {
-              //Printing "Payment Method" lines
-              $value = preg_replace('/<br[^>]*>/i', "\n", $value);
-              foreach (Mage::helper('core/string')->str_split($value, 45, true, true) as $_value) {
-                  $page->drawText(strip_tags(trim($_value)), $paymentLeft, $yPayments, 'UTF-8');
-                  $yPayments -= 12;
-              }
-          }
-      }
-
-      if ($order->getIsVirtual()) {
-          // replacement of Shipments-Payments rectangle block
-          $yPayments = min($addressesEndY, $yPayments);
-          $page->drawLine(25,  ($top - 25), 25,  $yPayments);
-          $page->drawLine(570, ($top - 25), 570, $yPayments);
-          $page->drawLine(25,  $yPayments,  570, $yPayments);
-
-          $this->y = $yPayments - 15;
-      } else {
-          $topMargin    = 15;
-          $methodStartY = $this->y;
-          $this->y     -= 15;
-
-          foreach (Mage::helper('core/string')->str_split($shippingMethod, 45, true, true) as $_value) {
-              $page->drawText(strip_tags(trim($_value)), 285, $this->y, 'UTF-8');
-              $this->y -= 15;
-          }
-
-          $yShipments = $this->y;
-          $totalShippingChargesText = "(" . Mage::helper('sales')->__('Total Shipping Charges') . " "
-              . $order->formatPriceTxt($order->getShippingAmount()) . ")";
-
-          $page->drawText($totalShippingChargesText, 285, $yShipments - $topMargin, 'UTF-8');
-          $yShipments -= $topMargin + 10;
-
-          $tracks = array();
-          if ($shipment) {
-              $tracks = $shipment->getAllTracks();
-          }
-          if (count($tracks)) {
-              $page->setFillColor(new Zend_Pdf_Color_Rgb(0.93, 0.92, 0.92));
-              $page->setLineWidth(0.5);
-              $page->drawRectangle(285, $yShipments, 510, $yShipments - 10);
-              $page->drawLine(400, $yShipments, 400, $yShipments - 10);
-              //$page->drawLine(510, $yShipments, 510, $yShipments - 10);
-
-              $this->_setFontRegular($page, 9);
-              $page->setFillColor(new Zend_Pdf_Color_GrayScale(0));
-              //$page->drawText(Mage::helper('sales')->__('Carrier'), 290, $yShipments - 7 , 'UTF-8');
-              $page->drawText(Mage::helper('sales')->__('Title'), 290, $yShipments - 7, 'UTF-8');
-              $page->drawText(Mage::helper('sales')->__('Number'), 410, $yShipments - 7, 'UTF-8');
-
-              $yShipments -= 20;
-              $this->_setFontRegular($page, 8);
-              foreach ($tracks as $track) {
-
-                  $CarrierCode = $track->getCarrierCode();
-                  if ($CarrierCode != 'custom') {
-                      $carrier = Mage::getSingleton('shipping/config')->getCarrierInstance($CarrierCode);
-                      $carrierTitle = $carrier->getConfigData('title');
-                  } else {
-                      $carrierTitle = Mage::helper('sales')->__('Custom Value');
-                  }
-
-                  //$truncatedCarrierTitle = substr($carrierTitle, 0, 35) . (strlen($carrierTitle) > 35 ? '...' : '');
-                  $maxTitleLen = 45;
-                  $endOfTitle = strlen($track->getTitle()) > $maxTitleLen ? '...' : '';
-                  $truncatedTitle = substr($track->getTitle(), 0, $maxTitleLen) . $endOfTitle;
-                  //$page->drawText($truncatedCarrierTitle, 285, $yShipments , 'UTF-8');
-                  $page->drawText($truncatedTitle, 292, $yShipments , 'UTF-8');
-                  $page->drawText($track->getNumber(), 410, $yShipments , 'UTF-8');
-                  $yShipments -= $topMargin - 5;
-              }
-          } else {
-              $yShipments -= $topMargin - 5;
-          }
-
-          $currentY = min($yPayments, $yShipments);
-
-          // replacement of Shipments-Payments rectangle block
-          $page->drawLine(25,  $methodStartY, 25,  $currentY); //left
-          $page->drawLine(25,  $currentY,     570, $currentY); //bottom
-          $page->drawLine(570, $currentY,     570, $methodStartY); //right
-
-          $this->y = $currentY;
-          $this->y -= 15;
-      }
+       $page->setFillColor(new Zend_Pdf_Color_Rgb(0.93, 0.92, 0.92));
   }
 
 }

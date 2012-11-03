@@ -14,8 +14,14 @@
       <sales>
         <rewrite>
           <order_pdf_invoice>BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice</order_pdf_invoice>
+          <order_pdf_items_invoice_default>BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Items_Invoice_Default</order_pdf_items_invoice_default>
         </rewrite>
       </sales>
+      <bundle>
+        <rewrite>
+          <sales_order_pdf_items_invoice>BlueVisionTec_EnhancedPdfInvoice_Model_Bundle_Sales_Order_Pdf_Items_Invoice</sales_order_pdf_items_invoice>
+        </rewrite>
+      </bundle>
     </models>
     <blocks>
       <enhancedpdfinvoice>
@@ -28,6 +34,18 @@
       </enhancedpdfinvoice>
     </helpers>
   </global>
+  
+  <frontend>
+    <translate>
+      <modules>
+        <enhancedpdfinvoice>
+          <files>
+            <default>BlueVisionTec_EnhancedPdfInvoice.csv</default>
+          </files>
+        </enhancedpdfinvoice>
+      </modules>
+    </translate>
+  </frontend>
   
   <adminhtml>
     <acl>
