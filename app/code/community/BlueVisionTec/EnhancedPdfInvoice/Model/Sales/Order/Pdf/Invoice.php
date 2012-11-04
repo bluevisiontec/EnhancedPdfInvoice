@@ -175,8 +175,11 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
   {
     $oPage = parent::newPage();
     $oPage = $this->_drawFoldingMarks($oPage);
+    $oPage = $this->_drawFooter($oPage);
     return $oPage;
   }
+  
+  
   
   protected function _drawFoldingMarks($oPage)
   {
@@ -271,6 +274,117 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
         $page->setFillColor(new Zend_Pdf_Color_GrayScale(0));
         $this->y -= 20;
     }
+  
+  protected function _drawFooter(Zend_Pdf_Page $page) {
+    
+    $page->setFillColor(new Zend_Pdf_Color_GrayScale(0));
+    $font = $this->_setFontRegular($page, 7);
+    $page->setLineWidth(0);
+    
+  
+    $y = $this->_iBottomMargin;
+    $x = $this->_iLeftMargin;
+    /*
+    $sStoreAdress = trim(strip_tags(Mage::getStoreConfig('general/imprint/shop_name', $store)));
+      $sStoreAdress .=  $this->_sSeparatorSign;
+      $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/company_first', $store)));
+      $sStoreAdress .=  $this->_sSeparatorSign;
+      $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/street', $store)));
+      $sStoreAdress .=  $this->_sSeparatorSign;
+      $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/zip', $store)));
+      $sStoreAdress .=  " ";
+      $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/city', $store)));
+      //$sStoreAdress .=  $this->_sSeparatorSign;
+      //$sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/web', $store)));*/
+    
+    $sCompany = trim(strip_tags(Mage::getStoreConfig('general/imprint/company_first', null))); // set store
+    $sZip = trim(strip_tags(Mage::getStoreConfig('general/imprint/zip', null))); // set store
+    $sCity = trim(strip_tags(Mage::getStoreConfig('general/imprint/city', null))); // set store
+    $sZipCity = $sZip . " - ". $sCity;
+    $sStreet = trim(strip_tags(Mage::getStoreConfig('general/imprint/street', null))); // set store
+    $sShop = trim(strip_tags(Mage::getStoreConfig('general/imprint/shop_name', null))); // set store
+    
+    $page->drawText(trim(strip_tags($sZipCity)),$x,$y,'UTF-8');
+    $y += 10;
+    $page->drawText(trim(strip_tags($sStreet)),$x,$y,'UTF-8');
+    $y += 10;
+    $page->drawText(trim(strip_tags($sCompany)),$x,$y,'UTF-8');
+    $y += 10;
+    $font = $this->_setFontBold($page, 7);
+    $page->drawText(trim(strip_tags($sShop)),$x,$y,'UTF-8');
+    $font = $this->_setFontRegular($page, 7);
+    
+    $y = $this->_iBottomMargin;
+    $x = ($this->_iFullPageWith) /2;
+    
+    $sPhone = trim(strip_tags(Mage::getStoreConfig('general/imprint/telephone', null))); // set store,
+    $sFax = trim(strip_tags(Mage::getStoreConfig('general/imprint/fax', null))); // set store
+    $sEmail = trim(strip_tags(Mage::getStoreConfig('general/imprint/email', null))); // set store
+    $sWeb = trim(strip_tags(Mage::getStoreConfig('general/imprint/web', null))); // set store
+    
+    if($sPhone) {
+      $sPhone = "Tel.: " . $sPhone;
+    }
+    if($sFax) {
+      $sFax = "FAX: " . $sFax;
+    }
+    if($sEmail) {
+      $sEmail = "E-Mail: " . $sEmail;
+    }
+    if($sWeb) {
+      $sWeb = "Web: " . $sWeb;
+    }
+    
+    $iMaxTextWidth = max(
+      $this->widthForStringUsingFontSize($sPhone, $font, 7),
+      $this->widthForStringUsingFontSize($sFax, $font, 7),
+      $this->widthForStringUsingFontSize($sEmail, $font, 7),
+      $this->widthForStringUsingFontSize($sWeb, $font, 7)
+    );
+    
+    $x = $x - ($iMaxTextWidth/2);
+
+    $page->drawText(trim(strip_tags($sWeb)),$x,$y,'UTF-8');
+    $y += 10;
+    $page->drawText(trim(strip_tags($sEmail)),$x,$y,'UTF-8');
+    $y += 10;
+    $page->drawText(trim(strip_tags($sFax)),$x,$y,'UTF-8');
+    $y += 10;
+    $page->drawText(trim(strip_tags($sPhone)),$x,$y,'UTF-8');
+    
+    $y = $this->_iBottomMargin;
+    
+    $sBankName = trim(strip_tags(Mage::getStoreConfig('general/imprint/bank_name', null))); // set store,
+    $sBankCodeNumber = trim(strip_tags(Mage::getStoreConfig('general/imprint/bank_code_number', null))); // set store
+    $sBankAccount = trim(strip_tags(Mage::getStoreConfig('general/imprint/bank_account', null))); // set store
+    $sIban = trim(strip_tags(Mage::getStoreConfig('general/imprint/iban', null))); // set store
+    $sSwift = trim(strip_tags(Mage::getStoreConfig('general/imprint/swift', null))); // set store
+    
+    $iMaxTextWidth = max(
+      $this->widthForStringUsingFontSize($sBankName, $font, 7),
+      $this->widthForStringUsingFontSize($sBankCodeNumber, $font, 7),
+      $this->widthForStringUsingFontSize($sBankAccount, $font, 7),
+      $this->widthForStringUsingFontSize($sIban, $font, 7),
+      $this->widthForStringUsingFontSize($sSwift, $font, 7)
+    );
+    
+    $x = $this->_iFullPageWith - $this->_iRightMargin - $iMaxTextWidth;
+    
+    $page->drawText(trim(strip_tags($sIban)),$x,$y,'UTF-8');
+    $y += 10;
+    $page->drawText(trim(strip_tags($sSwift)),$x,$y,'UTF-8');
+    $y += 10;
+    $page->drawText(trim(strip_tags($sBankAccount)),$x,$y,'UTF-8');
+    $y += 10;
+    $page->drawText(trim(strip_tags($sBankCodeNumber)),$x,$y,'UTF-8');
+    $y += 10;
+    $page->drawText(trim(strip_tags($sBankName)),$x,$y,'UTF-8');
+    
+    
+    
+    return $page;
+    
+  }
   
   /**
   * Return PDF document
@@ -643,8 +757,8 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
 
         // replacement of Shipments-Payments rectangle block
         $page->drawLine($this->_iLeftMargin,  $methodStartY, $this->_iLeftMargin,  $currentY); //left
-        $page->drawLine($this->_iLeftMargin,  $currentY,     570, $currentY); //bottom
-        $page->drawLine(570, $currentY,     570, $methodStartY); //right
+        $page->drawLine($this->_iLeftMargin,  $currentY,     560, $currentY); //bottom
+        $page->drawLine(560, $currentY,     560, $methodStartY); //right
 
         $this->y = $currentY;
         $this->y -= 15;
