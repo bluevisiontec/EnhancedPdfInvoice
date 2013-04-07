@@ -360,6 +360,22 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
     $sIban = trim(strip_tags(Mage::getStoreConfig('general/imprint/iban', null))); // set store
     $sSwift = trim(strip_tags(Mage::getStoreConfig('general/imprint/swift', null))); // set store
     
+    if($sBankName) {
+      $sBankName = "Bank: " . $sBankName;
+    }
+    if($sBankCodeNumber) {
+      $sBankCodeNumber = "BLZ.: " . $sBankCodeNumber;
+    }
+    if($sBankAccount) {
+      $sBankAccount = "Kontonr: " . $sBankAccount;
+    }
+    if($sIban) {
+      $sIban = "IBAN: " . $sIban;
+    }
+    if($sSwift) {
+      $sSwift = "BIC: " . $sSwift;
+    }
+    
     $iMaxTextWidth = max(
       $this->widthForStringUsingFontSize($sBankName, $font, 7),
       $this->widthForStringUsingFontSize($sBankCodeNumber, $font, 7),
@@ -637,7 +653,7 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
     $paymentInfo = Mage::helper('payment')->getInfoBlock($order->getPayment())
         ->setIsSecureMode(true)
         ->toPdf();
-    $paymentInfo = htmlspecialchars_decode($paymentInfo, ENT_QUOTES);
+    $paymentInfo = htmlspecialchars_decode(strip_tags($paymentInfo), ENT_QUOTES);
     $payment = explode('{{pdf_row_separator}}', $paymentInfo);
     foreach ($payment as $key=>$value){
         if (strip_tags(trim($value)) == '') {
@@ -706,7 +722,8 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
 
         $yShipments = $this->y;
         $totalShippingChargesText = "(" . Mage::helper('sales')->__('Total Shipping Charges') . " "
-            . $order->formatPriceTxt($order->getShippingAmount()) . ")";
+            . $order->formatPriceTxt($order->getShippingInclTax()) . ")"; //getShippingInclTax // getShippingAmount
+            // shipping excl. tax: $order->getShippingAmount()
 
         $page->drawText($totalShippingChargesText, 285, $yShipments - $topMargin, 'UTF-8');
         $yShipments -= $topMargin + 10;

@@ -53,7 +53,7 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Items_Invoice_Defau
         // draw SKU
         $lines[0][] = array(
             'text'  => Mage::helper('core/string')->str_split($this->getSku($item), 17),
-            'feed'  => 100,
+            'feed'  => 130,
             'align' => 'right'
         );
 
