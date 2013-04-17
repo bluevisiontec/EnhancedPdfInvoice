@@ -12,12 +12,6 @@
  * obtain it through the world-wide-web, please send an email
  * to license@magentocommerce.com so we can send you a copy immediately.
  *
- * DISCLAIMER
- *
- * Do not edit or add to this file if you wish to upgrade Magento to newer
- * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
- *
  * @category   BlueVisionTec
  * @package    BlueVisionTec_EnhancedPdfInvoice
  * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
@@ -303,13 +297,32 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
     $sZipCity = $sZip . " - ". $sCity;
     $sStreet = trim(strip_tags(Mage::getStoreConfig('general/imprint/street', null))); // set store
     $sShop = trim(strip_tags(Mage::getStoreConfig('general/imprint/shop_name', null))); // set store
+    $sCEO = trim(strip_tags(Mage::getStoreConfig('general/imprint/ceo', null)));
+    $sOwner = trim(strip_tags(Mage::getStoreConfig('general/imprint/owner', null)));
+    $sName = ($sCEO != "")? $sCEO : $sOwner;
+    $sVATID = trim(strip_tags(Mage::getStoreConfig('general/imprint/vat_id', null)));
+    $sTaxNumber = trim(strip_tags(Mage::getStoreConfig('general/imprint/tax_number', null)));
     
+    if($sVATID != "") {
+      $sVATID = Mage::helper("enhancedpdfinvoice")->__("VAT ID").": ".$sVATID;
+      $page->drawText(trim(strip_tags($sVATID)),$x,$y,'UTF-8');
+      $y += 10;
+    }
+    if($sTaxNumber != "") {
+      $sTaxNumber = Mage::helper("enhancedpdfinvoice")->__("Tax number").": ".$sTaxNumber;
+      $page->drawText(trim(strip_tags($sTaxNumber)),$x,$y,'UTF-8');
+      $y += 10;
+    }
     $page->drawText(trim(strip_tags($sZipCity)),$x,$y,'UTF-8');
     $y += 10;
     $page->drawText(trim(strip_tags($sStreet)),$x,$y,'UTF-8');
     $y += 10;
-    $page->drawText(trim(strip_tags($sCompany)),$x,$y,'UTF-8');
+    $page->drawText(trim(strip_tags($sName)),$x,$y,'UTF-8');
     $y += 10;
+    if($sCompany != $sShop) {
+      $page->drawText(trim(strip_tags($sCompany)),$x,$y,'UTF-8');
+      $y += 10;
+    }
     $font = $this->_setFontBold($page, 7);
     $page->drawText(trim(strip_tags($sShop)),$x,$y,'UTF-8');
     $font = $this->_setFontRegular($page, 7);
@@ -323,16 +336,16 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
     $sWeb = trim(strip_tags(Mage::getStoreConfig('general/imprint/web', null))); // set store
     
     if($sPhone) {
-      $sPhone = "Tel.: " . $sPhone;
+      $sPhone = Mage::helper("enhancedpdfinvoice")->__("Phone").": " . $sPhone;
     }
     if($sFax) {
-      $sFax = "FAX: " . $sFax;
+      $sFax = Mage::helper("enhancedpdfinvoice")->__("Fax").": " . $sFax;
     }
     if($sEmail) {
-      $sEmail = "E-Mail: " . $sEmail;
+      $sEmail = Mage::helper("enhancedpdfinvoice")->__("E-Mail").": " . $sEmail;
     }
     if($sWeb) {
-      $sWeb = "Web: " . $sWeb;
+      $sWeb = Mage::helper("enhancedpdfinvoice")->__("Web").": " . $sWeb;
     }
     
     $iMaxTextWidth = max(
@@ -361,19 +374,19 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
     $sSwift = trim(strip_tags(Mage::getStoreConfig('general/imprint/swift', null))); // set store
     
     if($sBankName) {
-      $sBankName = "Bank: " . $sBankName;
+      $sBankName = Mage::helper("enhancedpdfinvoice")->__("Bank").": " . $sBankName;
     }
     if($sBankCodeNumber) {
-      $sBankCodeNumber = "BLZ.: " . $sBankCodeNumber;
+      $sBankCodeNumber = Mage::helper("enhancedpdfinvoice")->__("Bank code number").": " . $sBankCodeNumber;
     }
     if($sBankAccount) {
-      $sBankAccount = "Kontonr: " . $sBankAccount;
+      $sBankAccount = Mage::helper("enhancedpdfinvoice")->__("Bank account number").": " . $sBankAccount;
     }
     if($sIban) {
-      $sIban = "IBAN: " . $sIban;
+      $sIban = Mage::helper("enhancedpdfinvoice")->__("IBAN").": " . $sIban;
     }
     if($sSwift) {
-      $sSwift = "BIC: " . $sSwift;
+      $sSwift = Mage::helper("enhancedpdfinvoice")->__("BIC/SWIFT").": " . $sSwift;
     }
     
     $iMaxTextWidth = max(
