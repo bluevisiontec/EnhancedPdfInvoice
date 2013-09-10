@@ -7,6 +7,11 @@ Please not that this module is in development state.
 
 Changelog
 
+2013-09-10
+
+* added: option to set image size in backend
+* fixed: add company register to footer
+
 2013-04-07
 
 * fixed: add footer with shop/company data

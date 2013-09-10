@@ -2,7 +2,7 @@
 <config>
   <tabs>
     <bvt_modules translate="label">
-      <label>BlueVisionTec e.U. Modules</label>
+      <label>BlueVisionTec Modules</label>
       <sort_order>1000</sort_order>
     </bvt_modules>
   </tabs>
@@ -36,6 +36,24 @@
               <show_in_website>1</show_in_website>
               <show_in_store>1</show_in_store>
             </logo_image>
+            <logo_image_width translate="label">
+              <label>Logo image width</label>
+              <comment>Leave emtpy to use image width</comment>
+              <frontend_type>text</frontend_type>
+              <sort_order>11</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </logo_image_width>
+            <logo_image_height translate="label">
+              <label>Logo image height</label>
+              <comment>Leave emtpy to use image height</comment>
+              <frontend_type>text</frontend_type>
+              <sort_order>11</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </logo_image_height>
             <font_type translate="label">
               <label>Font type</label>
               <frontend_type>select</frontend_type>

@@ -294,7 +294,7 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
     $sCompany = trim(strip_tags(Mage::getStoreConfig('general/imprint/company_first', null))); // set store
     $sZip = trim(strip_tags(Mage::getStoreConfig('general/imprint/zip', null))); // set store
     $sCity = trim(strip_tags(Mage::getStoreConfig('general/imprint/city', null))); // set store
-    $sZipCity = $sZip . " - ". $sCity;
+    $sZipCity = $sZip . " ". $sCity;
     $sStreet = trim(strip_tags(Mage::getStoreConfig('general/imprint/street', null))); // set store
     $sShop = trim(strip_tags(Mage::getStoreConfig('general/imprint/shop_name', null))); // set store
     $sCEO = trim(strip_tags(Mage::getStoreConfig('general/imprint/ceo', null)));
@@ -303,16 +303,19 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
     $sVATID = trim(strip_tags(Mage::getStoreConfig('general/imprint/vat_id', null)));
     $sTaxNumber = trim(strip_tags(Mage::getStoreConfig('general/imprint/tax_number', null)));
     
-    if($sVATID != "") {
-      $sVATID = Mage::helper("enhancedpdfinvoice")->__("VAT ID").": ".$sVATID;
-      $page->drawText(trim(strip_tags($sVATID)),$x,$y,'UTF-8');
-      $y += 10;
-    }
-    if($sTaxNumber != "") {
-      $sTaxNumber = Mage::helper("enhancedpdfinvoice")->__("Tax number").": ".$sTaxNumber;
-      $page->drawText(trim(strip_tags($sTaxNumber)),$x,$y,'UTF-8');
-      $y += 10;
-    }
+    $registerCourt = trim(strip_tags(Mage::getStoreConfig('general/imprint/court', null)));
+    $registerNumber = trim(strip_tags(Mage::getStoreConfig('general/imprint/register_number', null)));
+    
+    $countryName = Mage::app()->getLocale()->getCountryTranslation(Mage::getStoreConfig('general/imprint/country', $store));
+    
+    $register = $registerCourt;
+    $register .= empty($registerNumber) ? "" : " / " . $registerNumber;
+    
+    $page->drawText(trim(strip_tags($register)),$x,$y,'UTF-8');
+    $y += 20;
+    
+    $page->drawText(trim(strip_tags($countryName)),$x,$y,'UTF-8');
+    $y += 10;
     $page->drawText(trim(strip_tags($sZipCity)),$x,$y,'UTF-8');
     $y += 10;
     $page->drawText(trim(strip_tags($sStreet)),$x,$y,'UTF-8');
@@ -356,16 +359,32 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
     );
     
     $x = $x - ($iMaxTextWidth/2);
-
+    
+    $y += 20;
+    
+    if($sVATID != "") {
+      $sVATID = Mage::helper("enhancedpdfinvoice")->__("VAT ID").": ".$sVATID;
+      $page->drawText(trim(strip_tags($sVATID)),$x,$y,'UTF-8');
+      $y += 10;
+    }
+    if($sTaxNumber != "") {
+      $sTaxNumber = Mage::helper("enhancedpdfinvoice")->__("Tax number").": ".$sTaxNumber;
+      $page->drawText(trim(strip_tags($sTaxNumber)),$x,$y,'UTF-8');
+      $y += 10;
+    }
+    $y += 10;
     $page->drawText(trim(strip_tags($sWeb)),$x,$y,'UTF-8');
     $y += 10;
     $page->drawText(trim(strip_tags($sEmail)),$x,$y,'UTF-8');
     $y += 10;
-    $page->drawText(trim(strip_tags($sFax)),$x,$y,'UTF-8');
+    if($sFax) {
+      $page->drawText(trim(strip_tags($sFax)),$x,$y,'UTF-8');
+    }
     $y += 10;
     $page->drawText(trim(strip_tags($sPhone)),$x,$y,'UTF-8');
     
     $y = $this->_iBottomMargin;
+    $y += 30;
     
     $sBankName = trim(strip_tags(Mage::getStoreConfig('general/imprint/bank_name', null))); // set store,
     $sBankCodeNumber = trim(strip_tags(Mage::getStoreConfig('general/imprint/bank_code_number', null))); // set store
@@ -494,8 +513,12 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
       if (is_file($image)) {
         $image       = Zend_Pdf_Image::imageWithPath($image);
         $top         = $this->_iFullPageHeight - $this->_iTopMargin; //top border of the page
-        $widthLimit  = 200; //half of the page width
-        $heightLimit = 120; //assuming the image is not a "skyscraper"
+        $widthLimit  = Mage::getStoreConfig('bvt_enhancedpdfinvoice_config/design_settings/logo_image_width', $store);
+        $heightLimit = Mage::getStoreConfig('bvt_enhancedpdfinvoice_config/design_settings/logo_image_height', $store);
+        
+        $widthLimit = empty($widthLimit) ? 200 : $widthLimit;
+        $heightLimit = empty($heightLimit) ? 120 : $heightLimit;
+        
         $width       = $image->getPixelWidth();
         $height      = $image->getPixelHeight();
 
@@ -556,6 +579,8 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
       $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/zip', $store)));
       $sStoreAdress .=  " ";
       $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/city', $store)));
+      $sStoreAdress .=  $this->_sSeparatorSign;
+      $sStoreAdress .= Mage::app()->getLocale()->getCountryTranslation(Mage::getStoreConfig('general/imprint/country', $store));
       //$sStoreAdress .=  $this->_sSeparatorSign;
       //$sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/web', $store)));
 
@@ -595,6 +620,8 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
     $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/zip', $store)));
     $sStoreAdress .=  " ";
     $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/city', $store)));
+    $sStoreAdress .=  $this->_sSeparatorSign;
+    $sStoreAdress .= Mage::app()->getLocale()->getCountryTranslation(Mage::getStoreConfig('general/imprint/country', $store));
 
     $oPage->drawText(trim(strip_tags($sStoreAdress)),
                     $this->_iLetterWindowLeft,
@@ -647,9 +674,18 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
     $this->y -= 12;
     
     $oPage->drawText(
-      strip_tags(trim($oBillingAddress->getCountry()." - ".$oBillingAddress->getPostcode()." ".$oBillingAddress->getCity())), 
+      strip_tags(trim($oBillingAddress->getPostcode()." ".$oBillingAddress->getCity())), 
       $this->_iLetterWindowLeft, $this->y, 'UTF-8');
     $this->y -= 12;    
+    
+    $countryName = Mage::app()->getLocale()->getCountryTranslation($oBillingAddress->getCountry());
+    
+    $oPage->drawText(
+      strip_tags(trim($countryName)), 
+      $this->_iLetterWindowLeft, $this->y, 'UTF-8');
+    $this->y -= 12;    
+    
+    
     
   }
   
