@@ -73,15 +73,35 @@
           <show_in_website>1</show_in_website>
           <show_in_store>1</show_in_store>
           <fields>
-            <footer_text translate="label">
-              <label>Footer Text</label>
-              <frontend_type>textarea</frontend_type>
-              <comment>Custom text placed on invoice bottom</comment>
+            <display_tax_box translate="label">
+              <label>Display tax box</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_yesno</source_model>
+              <comment>Display tax in seperate box</comment>
               <sort_order>10</sort_order>
               <show_in_default>1</show_in_default>
               <show_in_website>1</show_in_website>
               <show_in_store>1</show_in_store>
+            </display_tax_box>
+            <performance_date translate="label">
+              <label>Display current month as performance date</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_yesno</source_model>
+              <sort_order>10</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </performance_date>
+            <footer_text translate="label">
+              <label>Footer Text</label>
+              <frontend_type>textarea</frontend_type>
+              <comment>Custom text placed on invoice bottom</comment>
+              <sort_order>20</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
             </footer_text>
+            
           </fields>
         </custom_settings>
         <item_settings translate="label">

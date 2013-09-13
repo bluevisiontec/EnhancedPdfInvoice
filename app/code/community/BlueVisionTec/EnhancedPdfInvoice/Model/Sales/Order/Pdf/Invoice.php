@@ -477,22 +477,140 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
               $this->_drawItem($item, $page, $order);
               $page = end($pdf->pages);
           }
+          
+          $yBeforeTotals = $this->y;
+          
           /* Add totals */
           $this->insertTotals($page, $invoice);
           if ($invoice->getStoreId()) {
               Mage::app()->getLocale()->revert();
           }
           
+          $yAfterTotals = $this->y;
+          $this->y = $yBeforeTotals;
+          
+          if(Mage::getStoreConfig(
+            'bvt_enhancedpdfinvoice_config/custom_settings/display_tax_box', 
+            $store
+          )) {
+            $this->y -= 15;
+            $this->_insertTaxBox($page, $invoice);
+          }
+          
+          $this->y = ($this->y < $yAfterTotals) ? $this->y : $yAfterTotals;
+          
           $this->_insertPaymentInfo($page, $order);
           
           $this->_insertFooterText($page, $invoice->getStore());
+          
+          if(Mage::getStoreConfig(
+            'bvt_enhancedpdfinvoice_config/custom_settings/performance_date', 
+            $store
+          )) {
+            $this->_insertPerformanceDate($page, $invoice->getStore());
+          }
+          
+          
+          
+          
       }
       $this->_afterGetPdf();
       return $pdf;
   }
+      
+  /**
+  * Insert performance date
+  *
+  * @param Zend_Pdf_Page $page
+  * @param int $y
+  * @param null invoice
+  */
+  protected  function _insertTaxBox(&$page, $invoice)
+  {
+    $order = $invoice->getOrder();
+    $taxCollection = Mage::getModel('tax/sales_order_tax')->getCollection();
+    $taxCollection->addFieldToFilter('order_id',$order->getId());
+    
+    $y = $this->y;
+    
+    $page->setFillColor(new Zend_Pdf_Color_Rgb(0.93, 0.92, 0.92));
+    $page->setLineWidth(0.5);
+    $page->drawRectangle($this->_iLeftMargin, $y-3, 320, $y+12);
+    $page->setFillColor(new Zend_Pdf_Color_Rgb(1, 1, 1));
+    
+    $lines = array();
+    
+    $lines[0][] = array(
+            'text'  => Mage::helper("enhancedpdfinvoice")->__("Tax description"),
+            'feed'  => $this->_iLeftMargin+4,
+            'align' => 'left',
+        );
+    $lines[0][] = array(
+            'text'  => Mage::helper("enhancedpdfinvoice")->__("Tax percentage"),
+            'feed'  => $this->_iLeftMargin+130,
+            'align' => 'left',
+        );
+    $lines[0][] = array(
+            'text'  => Mage::helper("enhancedpdfinvoice")->__("Tax amount"),
+            'feed'  => $this->_iLeftMargin+200,
+            'align' => 'left',
+        );
+    $i = 1;
+    if($taxCollection->count()) {
+      foreach($taxCollection as $taxClass) {
+        
+        $lines[$i][] = array(
+            'text'  => $taxClass->getTitle(),
+            'feed'  => $this->_iLeftMargin+4,
+            'align' => 'left',
+        );
+        $lines[$i][] = array(
+            'text'  => (float) $taxClass->getPercent() ."%",
+            'feed'  => $this->_iLeftMargin+130,
+            'align' => 'left',
+        );
+        $lines[$i][] = array(
+            'text'  => $order->formatPriceTxt($taxClass->getBaseAmount()),
+            'feed'  => $this->_iLeftMargin+200,
+            'align' => 'left',
+        );
+        $i++;
+        $y-=15;
+        $page->drawRectangle($this->_iLeftMargin, $y-3, 320, $y+12);
+      }
+    }    
+    
+    $lineBlock = array(
+      'lines'  => $lines,
+      'height' => 15,
+    );
+    
+    $page->setFillColor(new Zend_Pdf_Color_Rgb(0, 0, 0));
+    
+    $page = $this->drawLineBlocks($page, array($lineBlock), array('table_header' => true));
+    $this->setPage($page);
+  }
   
   /**
-  * Insert logo to pdf page
+  * Insert performance date
+  *
+  * @param Zend_Pdf_Page $page
+  * @param null $store
+  */
+  protected  function _insertPerformanceDate(&$page, $store = null)
+  {
+    $this->y = $this->y ? $this->y : 100;
+
+    $perfDate = Mage::helper("enhancedpdfinvoice")->__("Performance date");
+    $perfDate .= ": " . Mage::helper("enhancedpdfinvoice")->__(date("F"));
+    $page->drawText(
+      $perfDate, 
+      $this->_iLetterWindowLeft, $this->y, 'UTF-8');
+    $this->y -= 12;
+  }
+  
+  /**
+  * Insert custom footer text
   *
   * @param Zend_Pdf_Page $page
   * @param null $store
@@ -514,8 +632,6 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
         $this->_iLetterWindowLeft, $this->y, 'UTF-8');
       $this->y -= 12;
     }
-    
-    
   }
   
   /**

@@ -7,6 +7,11 @@ Please note that this module is in development state.
 
 Changelog
 
+2013-09-13
+
+* added: option to add separate tax box
+* added: possibility to define custom footer text
+
 2013-09-10
 
 * added: option to set image size in backend
