@@ -3,12 +3,49 @@ EnhancedPdfInvoice
 
 Magento Module EnhancedPdfInvoice
 
-Please note that this module is in development state. 
+This module changes Magento invoices layout to make it ready for GAS (Germany/Austria/Switzerland) Market.
+
+Features
+--------
+
+* Invoice ready for GAS-Market
+* Customer address placed on position of DL letter window
+* Added footer with necessary company information
+* Added folding marks on Invoice-PDF
+* Customize invoice font
+* Set Logo image and size
+* Add separate tax box
+* Add current month as performance date
+* Add custom text on invoice
+* Option to show tax as amount or percent in item lines
+* Add Invoice-PDF to E-Mails
+
+Deutsch
+=======
+
+Dieses Modul passt das Magento Rechnungs-Layout auf den DACH-Markt an (Deutschland/Österreich/Schweiz).
+
+Features
+--------
+
+* Rechnung für den DACH-Markt angepasst
+* Kunden-Adresse im Bereich des DL-Fensters
+* Footer mit notwendigen Informationen des Unternehmens
+* Falzmarken wurden zum Rechnuns-PDF hinzugefügt
+* Schriftart kann frei gewählt werden
+* Möglichkeit ein Logo und dessen Größe anzugeben
+* Möglichkeit die Steuern in einer separaten Box anzuzeigen
+* Option um aktuelles Monat als Leistungsdatum auf die Rechnung zu drucken
+* Möglichkeit einen individuellen Text auf der Rechnung anzuzeigen
+* Option um die Steuer in den Artikel-Zeilen als Betrag oder Prozent anzuzeigen
+* Option um das Rechnungs-PDF bei den Rechnungs-Emails automatisch anzuhängen
 
 Changelog
+--------
 
 2013-09-13
 
+* added: option to append Invoice-PDF in invoice Email.
 * added: option to add separate tax box
 * added: possibility to define custom footer text
 
@@ -32,5 +69,4 @@ Changelog
 TODO: 
 
 * fix layout when no logo image is uploaded in the module config
-* add option to append pdf invoice to mail
 * add option for displaying shipping fee including or excluding tax

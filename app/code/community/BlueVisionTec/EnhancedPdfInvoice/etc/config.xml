@@ -2,7 +2,7 @@
 <config>
   <modules>
     <BlueVisionTec_EnhancedPdfInvoice>
-      <version>0.0.2</version>
+      <version>0.1.0</version>
     </BlueVisionTec_EnhancedPdfInvoice>
   </modules>
   
@@ -11,11 +11,17 @@
       <enhancedpdfinvoice>
           <class>BlueVisionTec_EnhancedPdfInvoice_Model</class>
       </enhancedpdfinvoice>
+      <core>
+        <rewrite>
+          <email_template_mailer>BlueVisionTec_EnhancedPdfInvoice_Model_Core_Email_Template_Mailer</email_template_mailer>
+        </rewrite>
+      </core>
       <sales>
         <rewrite>
           <order_pdf_invoice>BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice</order_pdf_invoice>
           <order_pdf_items_invoice_default>BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Items_Invoice_Default</order_pdf_items_invoice_default>
           <order_pdf_total_default>BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Total_Default</order_pdf_total_default>
+          <order_invoice>BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Invoice</order_invoice>
         </rewrite>
       </sales>
       <tax>

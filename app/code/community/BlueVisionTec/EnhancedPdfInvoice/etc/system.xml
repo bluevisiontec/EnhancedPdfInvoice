@@ -123,6 +123,26 @@
             </tax_display>
           </fields>
         </item_settings>
+        <email_settings translate="label">
+          <label>Email Settings</label>
+          <frontend_type>select</frontend_type>
+          <sort_order>40</sort_order>
+          <show_in_default>1</show_in_default>
+          <show_in_website>1</show_in_website>
+          <show_in_store>1</show_in_store>
+          <fields>
+            <append_pdf translate="label">
+              <label>Append Invoice-PDF</label>
+              <comment>Append Invoice-PDF in invoice Email</comment>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_yesno</source_model>
+              <sort_order>10</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </append_pdf>
+          </fields>
+        </email_settings>
       </groups>
     </bvt_enhancedpdfinvoice_config>
   </sections>
