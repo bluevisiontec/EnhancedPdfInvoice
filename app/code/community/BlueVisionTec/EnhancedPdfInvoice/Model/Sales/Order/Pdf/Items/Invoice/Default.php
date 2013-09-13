@@ -15,7 +15,7 @@
  * @category   BlueVisionTec
  * @package    BlueVisionTec_EnhancedPdfInvoice
  * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
- * @copyright   Copyright (c) 2012 BlueVisionTec e.U. (http://www.bluevisiontec.com)
+ * @copyright   Copyright (c) 2013 BlueVisionTec UG (haftungsbeschränkt) (http://www.bluevisiontec.de)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -25,7 +25,7 @@
  * @category   BlueVisionTec
  * @package    BlueVisionTec_EnhancedPdfInvoice
  * @author     Magento Core Team <core@magentocommerce.com>
- * @author     BlueVisionTec e.U. <magedev@bluevisiontec.eu>
+ * @author     BlueVisionTec UG (haftungsbeschränkt) <magedev@bluevisiontec.eu>
  */
 class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Items_Invoice_Default extends Mage_Sales_Model_Order_Pdf_Items_Invoice_Default
 {
@@ -98,24 +98,31 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Items_Invoice_Defau
             $i++;
         }
 
-        // draw Tax
-        $lines[0][] = array(
-            'text'  => $order->formatPriceTxt($item->getTaxAmount()),
-            'feed'  => 495,
-            'font'  => 'bold',
-            'align' => 'right'
-        );
+        if(Mage::getStoreConfig("bvt_enhancedpdfinvoice_config/item_settings/tax_display") == "percent") {
+          // draw Tax
+          $lines[0][] = array(
+              'text'  => (float) $item->getOrderItem()->getTaxPercent() . "%",//getTaxAmount
+              'feed'  => 495,
+              'font'  => 'bold',
+              'align' => 'right'
+          );          
+        } elseif(Mage::getStoreConfig("bvt_enhancedpdfinvoice_config/item_settings/tax_display") == "amount") {
+          // draw Tax
+          $lines[0][] = array(
+              'text'  => $order->formatPriceTxt($item->getTaxAmount()),
+              'feed'  => 495,
+              'font'  => 'bold',
+              'align' => 'right'
+          );
+        } 
 
         // custom options
         $options = $this->getItemOptions();
         if ($options) {
             foreach ($options as $option) {
-                // draw options label
-                $lines[][] = array(
-                    'text' => Mage::helper('core/string')->str_split(strip_tags($option['label']), 40, true, true),
-                    'font' => 'italic',
-                    'feed' => 35
-                );
+                
+                $optionText = strip_tags($option['label']);
+                
 
                 if ($option['value']) {
                     if (isset($option['print_value'])) {
@@ -123,14 +130,14 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Items_Invoice_Defau
                     } else {
                         $_printValue = strip_tags($option['value']);
                     }
-                    $values = explode(', ', $_printValue);
-                    foreach ($values as $value) {
-                        $lines[][] = array(
-                            'text' => Mage::helper('core/string')->str_split($value, 30, true, true),
-                            'feed' => 40
-                        );
-                    }
+                    $optionText .= ": " . $_printValue;
                 }
+                
+                $lines[][] = array(
+                    'text' => $optionText,
+                    //'font' => 'italic',
+                    'feed' => 150
+                );
             }
         }
 

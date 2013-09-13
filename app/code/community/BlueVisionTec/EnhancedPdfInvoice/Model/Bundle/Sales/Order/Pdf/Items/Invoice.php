@@ -18,18 +18,20 @@
  * versions in the future. If you wish to customize Magento for your
  * needs please refer to http://www.magentocommerce.com for more information.
  *
- * @category    Mage
- * @package     Mage_Bundle
+ * @category   BlueVisionTec
+ * @package    BlueVisionTec_EnhancedPdfInvoice
  * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 BlueVisionTec UG (haftungsbeschränkt) (http://www.bluevisiontec.de)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
  * Sales Order Invoice Pdf default items renderer
  *
- * @category   Mage
- * @package    Mage_Sales
+ * @category   BlueVisionTec
+ * @package    BlueVisionTec_EnhancedPdfInvoice
  * @author     Magento Core Team <core@magentocommerce.com>
+ * @author     BlueVisionTec UG (haftungsbeschränkt) <magedev@bluevisiontec.eu>
  */
 class BlueVisionTec_EnhancedPdfInvoice_Model_Bundle_Sales_Order_Pdf_Items_Invoice extends Mage_Bundle_Model_Sales_Order_Pdf_Items_Invoice
 {
@@ -128,13 +130,23 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Bundle_Sales_Order_Pdf_Items_Invoic
                     'font'  => 'bold',
                 );
 
-                $tax = $order->formatPriceTxt($_item->getTaxAmount());
-                $line[] = array(
-                    'text'  => $tax,
-                    'feed'  => 495,
-                    'font'  => 'bold',
-                    'align' => 'right'
-                );
+                if(Mage::getStoreConfig("bvt_enhancedpdfinvoice_config/item_settings/tax_display") == "percent") {
+                  // draw Tax
+                  $lines[0][] = array(
+                      'text'  => (float) $item->getOrderItem()->getTaxPercent() . "%",
+                      'feed'  => 495,
+                      'font'  => 'bold',
+                      'align' => 'right'
+                  );          
+                } elseif(Mage::getStoreConfig("bvt_enhancedpdfinvoice_config/item_settings/tax_display") == "amount") {
+                  // draw Tax
+                  $lines[0][] = array(
+                      'text'  => $order->formatPriceTxt($item->getTaxAmount()),
+                      'feed'  => 495,
+                      'font'  => 'bold',
+                      'align' => 'right'
+                  );
+                } 
 
                 $row_total = $order->formatPriceTxt($_item->getRowTotal());
                 $line[] = array(

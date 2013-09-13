@@ -15,7 +15,7 @@
  * @category   BlueVisionTec
  * @package    BlueVisionTec_EnhancedPdfInvoice
  * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
- * @copyright   Copyright (c) 2012 BlueVisionTec e.U. (http://www.bluevisiontec.com)
+ * @copyright   Copyright (c) 2013 BlueVisionTec UG (haftungsbeschränkt) (http://www.bluevisiontec.de)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -25,7 +25,7 @@
  * @category   BlueVisionTec
  * @package    BlueVisionTec_EnhancedPdfInvoice
  * @author     Magento Core Team <core@magentocommerce.com>
- * @author     BlueVisionTec e.U. <magedev@bluevisiontec.eu>
+ * @author     BlueVisionTec UG (haftungsbeschränkt) <magedev@bluevisiontec.eu>
  */
 class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mage_Sales_Model_Order_Pdf_Invoice
 {
@@ -165,12 +165,12 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
     return $font;
   }
   
-  public function newPage()
+  public function newPage(array $settings = array())
   {
-    $oPage = parent::newPage();
-    $oPage = $this->_drawFoldingMarks($oPage);
-    $oPage = $this->_drawFooter($oPage);
-    return $oPage;
+    $page = parent::newPage();
+    $page = $this->_drawFoldingMarks($page);
+    $page = $this->_drawFooter($page);
+    return $page;
   }
   
   
@@ -278,18 +278,6 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
   
     $y = $this->_iBottomMargin;
     $x = $this->_iLeftMargin;
-    /*
-    $sStoreAdress = trim(strip_tags(Mage::getStoreConfig('general/imprint/shop_name', $store)));
-      $sStoreAdress .=  $this->_sSeparatorSign;
-      $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/company_first', $store)));
-      $sStoreAdress .=  $this->_sSeparatorSign;
-      $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/street', $store)));
-      $sStoreAdress .=  $this->_sSeparatorSign;
-      $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/zip', $store)));
-      $sStoreAdress .=  " ";
-      $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/city', $store)));
-      //$sStoreAdress .=  $this->_sSeparatorSign;
-      //$sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/web', $store)));*/
     
     $sCompany = trim(strip_tags(Mage::getStoreConfig('general/imprint/company_first', null))); // set store
     $sZip = trim(strip_tags(Mage::getStoreConfig('general/imprint/zip', null))); // set store
@@ -306,7 +294,7 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
     $registerCourt = trim(strip_tags(Mage::getStoreConfig('general/imprint/court', null)));
     $registerNumber = trim(strip_tags(Mage::getStoreConfig('general/imprint/register_number', null)));
     
-    $countryName = Mage::app()->getLocale()->getCountryTranslation(Mage::getStoreConfig('general/imprint/country', $store));
+    $countryName = Mage::app()->getLocale()->getCountryTranslation(Mage::getStoreConfig('general/imprint/country', null));
     
     $register = $registerCourt;
     $register .= empty($registerNumber) ? "" : " / " . $registerNumber;
@@ -467,13 +455,16 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
               $page,
               $order,
               $invoice,
-              Mage::getStoreConfigFlag(self::XML_PATH_SALES_PDF_INVOICE_PUT_ORDER_ID, $order->getStoreId()
+              Mage::getStoreConfigFlag(
+                self::XML_PATH_SALES_PDF_INVOICE_PUT_ORDER_ID, 
+                $order->getStoreId()
               )
           );
           /* Add document text and number */
           $this->insertDocumentNumber(
               $page,
-              Mage::helper('sales')->__('Invoice # ') . $invoice->getIncrementId()
+              Mage::helper('sales')->__('Invoice # ') 
+                . $invoice->getIncrementId()
           );
           /* Add table */
           $this->_drawHeader($page);
@@ -493,6 +484,8 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
           }
           
           $this->_insertPaymentInfo($page, $order);
+          
+          $this->_insertFooterText($page, $invoice->getStore());
       }
       $this->_afterGetPdf();
       return $pdf;
@@ -504,17 +497,54 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
   * @param Zend_Pdf_Page $page
   * @param null $store
   */
+  protected  function _insertFooterText(&$page, $store = null)
+  {
+    $this->y = $this->y ? $this->y : 100;
+    
+    $footerText = Mage::getStoreConfig(
+      'bvt_enhancedpdfinvoice_config/custom_settings/footer_text', 
+      $store
+    );
+           
+    $footerTextLines = explode("\n",$footerText);
+    
+    foreach($footerTextLines as $footerLine) {
+      $page->drawText(
+        strip_tags($footerLine), 
+        $this->_iLetterWindowLeft, $this->y, 'UTF-8');
+      $this->y -= 12;
+    }
+    
+    
+  }
+  
+  /**
+  * Insert logo to pdf page
+  *
+  * @param Zend_Pdf_Page $page
+  * @param null $store
+  */
   protected function insertLogo(&$page, $store = null)
   {
     $this->y = $this->y ? $this->y : 815;
-    $image = Mage::getStoreConfig('bvt_enhancedpdfinvoice_config/design_settings/logo_image', $store);
+    $image = Mage::getStoreConfig(
+      'bvt_enhancedpdfinvoice_config/design_settings/logo_image', 
+      $store
+    );
     if ($image) {
       $image = Mage::getBaseDir('media') . '/bvt/enhancedpdfinvoice/' . $image;
       if (is_file($image)) {
         $image       = Zend_Pdf_Image::imageWithPath($image);
-        $top         = $this->_iFullPageHeight - $this->_iTopMargin; //top border of the page
-        $widthLimit  = Mage::getStoreConfig('bvt_enhancedpdfinvoice_config/design_settings/logo_image_width', $store);
-        $heightLimit = Mage::getStoreConfig('bvt_enhancedpdfinvoice_config/design_settings/logo_image_height', $store);
+        //top border of the page
+        $top         = $this->_iFullPageHeight - $this->_iTopMargin; 
+        $widthLimit  = Mage::getStoreConfig(
+          'bvt_enhancedpdfinvoice_config/design_settings/logo_image_width', 
+          $store
+        );
+        $heightLimit = Mage::getStoreConfig(
+          'bvt_enhancedpdfinvoice_config/design_settings/logo_image_height', 
+          $store
+        );
         
         $widthLimit = empty($widthLimit) ? 200 : $widthLimit;
         $heightLimit = empty($heightLimit) ? 120 : $heightLimit;
@@ -570,19 +600,29 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
       $this->y = $this->y ? $this->y : 815;
       $top = 815;
       
-      $sStoreAdress = trim(strip_tags(Mage::getStoreConfig('general/imprint/shop_name', $store)));
+      $sStoreAdress = trim(strip_tags(
+        Mage::getStoreConfig('general/imprint/shop_name', $store)
+      ));
       $sStoreAdress .=  $this->_sSeparatorSign;
-      $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/company_first', $store)));
+      $sStoreAdress .= trim(strip_tags(
+        Mage::getStoreConfig('general/imprint/company_first', $store)
+      ));
       $sStoreAdress .=  $this->_sSeparatorSign;
-      $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/street', $store)));
+      $sStoreAdress .= trim(strip_tags(
+        Mage::getStoreConfig('general/imprint/street', $store)
+      ));
       $sStoreAdress .=  $this->_sSeparatorSign;
-      $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/zip', $store)));
+      $sStoreAdress .= trim(strip_tags(
+        Mage::getStoreConfig('general/imprint/zip', $store)
+      ));
       $sStoreAdress .=  " ";
-      $sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/city', $store)));
+      $sStoreAdress .= trim(strip_tags(
+        Mage::getStoreConfig('general/imprint/city', $store)
+      ));
       $sStoreAdress .=  $this->_sSeparatorSign;
-      $sStoreAdress .= Mage::app()->getLocale()->getCountryTranslation(Mage::getStoreConfig('general/imprint/country', $store));
-      //$sStoreAdress .=  $this->_sSeparatorSign;
-      //$sStoreAdress .= trim(strip_tags(Mage::getStoreConfig('general/imprint/web', $store)));
+      $sStoreAdress .= Mage::app()->getLocale()->getCountryTranslation(
+        Mage::getStoreConfig('general/imprint/country', $store)
+      );
 
       $page->drawText(trim(strip_tags($sStoreAdress)),
                       $this->_logoRight + 5,

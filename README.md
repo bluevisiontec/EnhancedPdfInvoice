@@ -3,7 +3,7 @@ EnhancedPdfInvoice
 
 Magento Module EnhancedPdfInvoice
 
-Please not that this module is in development state. 
+Please note that this module is in development state. 
 
 Changelog
 
@@ -11,6 +11,8 @@ Changelog
 
 * added: option to set image size in backend
 * fixed: add company register to footer
+* fixed: display product configurable options in single line
+* added: option to set tax display (percentage or amount) in backend
 
 2013-04-07
 

@@ -2,7 +2,7 @@
 <config>
   <modules>
     <BlueVisionTec_EnhancedPdfInvoice>
-      <version>0.0.1</version>
+      <version>0.0.2</version>
     </BlueVisionTec_EnhancedPdfInvoice>
   </modules>
   
@@ -15,8 +15,14 @@
         <rewrite>
           <order_pdf_invoice>BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice</order_pdf_invoice>
           <order_pdf_items_invoice_default>BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Items_Invoice_Default</order_pdf_items_invoice_default>
+          <order_pdf_total_default>BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Total_Default</order_pdf_total_default>
         </rewrite>
       </sales>
+      <tax>
+        <rewrite>
+          <sales_pdf_tax>BlueVisionTec_EnhancedPdfInvoice_Model_Tax_Sales_Pdf_Tax</sales_pdf_tax>
+        </rewrite>
+      </tax>
       <bundle>
         <rewrite>
           <sales_order_pdf_items_invoice>BlueVisionTec_EnhancedPdfInvoice_Model_Bundle_Sales_Order_Pdf_Items_Invoice</sales_order_pdf_items_invoice>
@@ -67,6 +73,15 @@
             </admin>
         </resources>
     </acl>
+    <translate>
+      <modules>
+        <enhancedpdfinvoice>
+          <files>
+            <default>BlueVisionTec_EnhancedPdfInvoice.csv</default>
+          </files>
+        </enhancedpdfinvoice>
+      </modules>
+    </translate>
   </adminhtml>
   
   <default>
@@ -74,6 +89,9 @@
       <design_settings>
         <font_type>Helvetica</font_type>
       </design_settings>
+      <item_settings>
+        <tax_display>percent</tax_display>
+      </item_settings>
     </bvt_enhancedpdfinvoice_config>
   </default>
 </config>

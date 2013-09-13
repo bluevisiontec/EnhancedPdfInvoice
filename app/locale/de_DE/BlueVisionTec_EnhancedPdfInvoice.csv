@@ -1,5 +1,5 @@
 "Customer-Nr.: ","Kunden-Nr.: "
-"Invoice-Nr.: ","Rechnungs-Nr.:"
+"Invoice-Nr.: ","Rechnungs-Nr.: "
 "Order Date: ","Bestelldatum: "
 "Single Price","Einzelpreis"
 "SKU ","Artikel-Nr."
@@ -14,3 +14,5 @@
 "Bank account number","Kontonr."
 "IBAN","IBAN"
 "BIC/SWIFT","BIC/SWIFT"
+"Tax","MwSt."
+"Custom Text Settings","Eigene Text-Einstellungen"
