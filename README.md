@@ -19,6 +19,7 @@ Features
 * Add custom text on invoice
 * Option to show tax as amount or percent in item lines
 * Add Invoice-PDF to E-Mails
+* Credit memo pdf ready for GAS-Market
 
 Deutsch
 =======
@@ -39,9 +40,15 @@ Features
 * Möglichkeit einen individuellen Text auf der Rechnung anzuzeigen
 * Option um die Steuer in den Artikel-Zeilen als Betrag oder Prozent anzuzeigen
 * Option um das Rechnungs-PDF bei den Rechnungs-Emails automatisch anzuhängen
+* Gutschrift-PDF für den DACH-Markt angepasst
 
 Changelog
 --------
+
+2013-12-20
+
+* added: credit memo pdf prints now in same format as invoice pdf
+* fixed: show invoice date on invoice pdf
 
 2013-09-13
 
@@ -68,5 +75,5 @@ Changelog
 
 TODO: 
 
-* fix layout when no logo image is uploaded in the module config
-* add option for displaying shipping fee including or excluding tax
+- [ ] fix layout when no logo image is uploaded in the module config
+- [ ] add option for displaying shipping fee including or excluding tax
