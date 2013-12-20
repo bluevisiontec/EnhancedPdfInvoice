@@ -1015,17 +1015,7 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
       $page->drawText(
               Mage::helper('sales')->__('Invoice'), $this->_iLeftMargin, $this->y, 'UTF-8'
           );
-          
-      if($putOrderId)
-      {
-        $font = $this->_setFontBold($page, 10);
-        $sOrderNumber = Mage::helper('sales')->__('Order #').$order->getIncrementId();
-        $iWidth = $this->widthForStringUsingFontSize($sOrderNumber, $font, 10);
-        $page->drawText(
-                $sOrderNumber, ($this->_iFullPageWith - $this->_iRightMargin) - $iWidth, $this->y, 'UTF-8'
-            );
-      }
-          
+
       $this->y -= 20;      
       
       $font = $this->_setFontBold($page, 10);
@@ -1046,14 +1036,42 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
               $sInvoiceNumber, ($this->_iFullPageWith - $this->_iLeftMargin - $this->_iRightMargin)/2 - $iWidth/2, $this->y, 'UTF-8'
             );
       }    
-      $sOrderDate = Mage::helper('sales')->__('Order Date: ') . Mage::helper('core')->formatDate(
+      
+      if($putOrderId)
+      {
+      
+		$this->y += 40;
+      
+        $font = $this->_setFontBold($page, 10);
+        $sOrderNumber = Mage::helper('sales')->__('Order #').$order->getIncrementId();
+        $iWidth = $this->widthForStringUsingFontSize($sOrderNumber, $font, 10);
+        $page->drawText(
+                $sOrderNumber, ($this->_iFullPageWith - $this->_iRightMargin) - $iWidth, $this->y, 'UTF-8'
+            );
+        $this->y -= 20;    
+        $sOrderDate = Mage::helper('sales')->__('Order Date: ') . Mage::helper('core')->formatDate(
               $order->getCreatedAtStoreDate(), 'medium', false
           );
           
-      $iWidth = $this->widthForStringUsingFontSize($sOrderDate, $font, 10);
+        $iWidth = $this->widthForStringUsingFontSize($sOrderDate, $font, 10);
+      
+		$page->drawText(
+				$sOrderDate, ($this->_iFullPageWith - $this->_iRightMargin) - $iWidth, $this->y, 'UTF-8'
+			);
+		
+		$this->y -= 20;
+      }
+      
+      
+      $sinvoiceDate = Mage::helper('sales')->__('Invoice Date: ') . Mage::helper('core')->formatDate(
+              $oInvoice->getCreatedAtStoreDate(), 'medium', false
+          );    
+      
+      
+      $iWidth = $this->widthForStringUsingFontSize($sinvoiceDate, $font, 10);
       
       $page->drawText(
-             $sOrderDate, ($this->_iFullPageWith - $this->_iRightMargin) - $iWidth, $this->y, 'UTF-8'
+             $sinvoiceDate, ($this->_iFullPageWith - $this->_iRightMargin) - $iWidth, $this->y, 'UTF-8'
           );
       
       $this->_setFontRegular($page, 10);
