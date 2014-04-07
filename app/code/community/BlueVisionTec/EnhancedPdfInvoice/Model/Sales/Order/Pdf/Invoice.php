@@ -602,7 +602,8 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
     $this->y = $this->y ? $this->y : 100;
 
     $perfDate = Mage::helper("enhancedpdfinvoice")->__("Performance date");
-    $perfDate .= ": " . Mage::helper("enhancedpdfinvoice")->__(date("F"));
+    $perfDate .= ": " . Mage::helper("enhancedpdfinvoice")->__(date("F")) . " ";
+    $perfDate .= date("Y");
     $page->drawText(
       $perfDate, 
       $this->_iLetterWindowLeft, $this->y, 'UTF-8');
@@ -846,6 +847,91 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
   }
   
   /**
+   * Insert customer shipping address to pdf page
+   *
+   * @param Zend_Pdf_Page $oPage
+   * @param Mage_Sales_Model_Order $oOrder
+   */
+  protected function insertCustomerShippingAddress(&$oPage, $oOrder,$oInvoice = null)
+  {
+    $oPage->setFillColor(new Zend_Pdf_Color_GrayScale(0));
+    $font = $this->_setFontRegular($oPage, 7);
+    $oPage->setLineWidth(0);
+    $store = $oInvoice->getStore();
+    
+    $xShippingLeft = $this->_iFullPageWith - $this->_iRightMargin - $this->_iLetterWindowWidth;
+    $xShippingTop = $this->_iLetterWindowTop;
+   
+    $oPage->drawText(Mage::helper('enhancedpdfinvoice')->__('Shipping Address'),
+                    $xShippingLeft,
+                    $this->_iFullPageHeight - $this->_iTopMargin - $xShippingTop,
+                    'UTF-8');
+                    
+    $x1 = $xShippingLeft;
+    $x2 = $xShippingLeft + $this->_iLetterWindowWidth;
+    $y1 = $this->_iFullPageHeight - $this->_iTopMargin - $xShippingTop -2;
+    $y2 = $y1;
+                    
+    $oPage->drawLine($x1,$y1,$x2,$y2);
+         
+    $y1 -= 12;     
+         
+    $tmpY = $this->y;
+    $this->y = $y1;
+    
+    $shippingAddress = $oOrder->getShippingAddress();
+    
+    $font = $this->_setFontBold($oPage, 10);
+    
+    if($shippingAddress->getCompany())
+    {
+      $oPage->drawText(
+        strip_tags(trim($shippingAddress->getCompany())), 
+        $xShippingLeft, $this->y, 'UTF-8');
+      $this->y -= 12;
+      
+      $font = $this->_setFontRegular($oPage, 10);
+    }
+    
+    $sName = Mage::helper('enhancedpdfinvoice')->__($shippingAddress->getSalutation());
+    $sName .= ($sName != "") ? " " : "";
+    $sName .= $shippingAddress->getFirstname();
+    $sName .= " ". $shippingAddress->getLastname();
+    
+    $oPage->drawText(
+      strip_tags(trim($sName)), 
+      $xShippingLeft, $this->y, 'UTF-8');
+    $this->y -= 12;
+    
+    $font = $this->_setFontRegular($oPage, 10);
+    
+    $sStreet = $shippingAddress->getStreet(1);
+    $sStreet .= ($shippingAddress->getStreet(2)) ? ", ".$shippingAddress->getStreet(2) : "";
+    
+    $oPage->drawText(
+      strip_tags(trim($sStreet)), 
+      $xShippingLeft, $this->y, 'UTF-8');
+    $this->y -= 12;
+    
+    $oPage->drawText(
+      strip_tags(trim($shippingAddress->getPostcode()." ".$shippingAddress->getCity())), 
+      $xShippingLeft, $this->y, 'UTF-8');
+    $this->y -= 12;    
+    
+    $countryName = Mage::app()->getLocale()->getCountryTranslation($shippingAddress->getCountry());
+    
+    $oPage->drawText(
+      strip_tags(trim($countryName)), 
+      $xShippingLeft, $this->y, 'UTF-8');
+    $this->y -= 12;    
+    
+    $this->y -= 10;
+    
+    $this->y = ($tmpY < $this->y) ? $tmpY : $this->y;
+    
+  }
+  
+  /**
     * Insert payment info to pdf page
     *
     * @param Zend_Pdf_Page $page
@@ -1006,6 +1092,9 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
       }
 
       $this->insertCustomerBillingAddress($page,$order,$oInvoice);
+      if(Mage::getStoreConfig("bvt_enhancedpdfinvoice_config/general_settings/display_shipping_address")) {
+		$this->insertCustomerShippingAddress($page,$order,$oInvoice);
+      }
       
       $this->y = $this->y ? $this->y : $this->_iFullPageHeight - $this->_iTopMargin - $this->_iLetterWindowTop - $this->_iLetterWindowHeight -10;
 
