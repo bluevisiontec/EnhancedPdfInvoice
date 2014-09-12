@@ -88,4 +88,20 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Total_Default exten
         }
         return $taxClassAmount;
     }
+    
+    /**
+     *
+     * @return array
+     */
+    public function getTotalsForDisplay() {
+		$totals = parent::getTotalsForDisplay();
+		
+		if($this->getTitle() == "Tax" && Mage::getStoreConfig(
+            'bvt_enhancedpdfinvoice_config/custom_settings/display_tax_box', 
+            $store
+          )) {
+			return array();
+		}
+		return $totals;
+    }
 }

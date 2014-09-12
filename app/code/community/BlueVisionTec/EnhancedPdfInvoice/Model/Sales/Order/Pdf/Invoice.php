@@ -268,7 +268,14 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
         $page->setFillColor(new Zend_Pdf_Color_GrayScale(0));
         $this->y -= 20;
     }
-  
+    
+  /**
+	* Draw page footer
+	*
+	* @param Zend_Pdf_Page $page
+	*
+	* @return Zend_Pdf_Page
+	*/
   protected function _drawFooter(Zend_Pdf_Page $page) {
     
     $page->setFillColor(new Zend_Pdf_Color_GrayScale(0));
@@ -510,26 +517,61 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
             $this->_insertPerformanceDate($page, $invoice->getStore());
           }
           
-          
-          
-          
       }
       $this->_afterGetPdf();
       return $pdf;
   }
       
   /**
-  * Insert performance date
+   * calculate taxes
+   *
+   * @param null invoice
+   * 
+   * @return array
+   */ 
+  protected function getFullTaxInfo($invoice) {
+	$order = $invoice->getOrder();
+    $taxCollection = Mage::getModel('tax/sales_order_tax')->getCollection();
+    $taxCollection->addFieldToFilter('order_id',$order->getId());
+    
+    $taxes = array();
+    
+    foreach($taxCollection as $taxClass) {
+    
+		$taxPercent = (float) $taxClass->getPercent();
+		$taxes[$taxPercent] = array(
+			"tax_base_amount" => 0,
+			"title" => $taxClass->getTitle(),
+			"amount" => $taxClass->getBaseAmount()
+		);
+		if($taxPercent == 19 || $taxPercent == 20) {
+			$taxes[$taxPercent]["tax_base_amount"] += $invoice->getShippingAmount();
+			$taxes[$taxPercent]["tax_base_amount"] += $order->getCodFeeInvoiced();
+		}
+    }
+    
+    foreach($invoice->getAllItems() as $item) {
+    	$percent = (float) $item->getOrderItem()->getTaxPercent();
+    	$taxes[$percent]["tax_base_amount"] += $item->getRowTotal();
+    }
+    
+    
+    return $taxes;
+  }
+      
+  /**
+  * Insert tax box
   *
   * @param Zend_Pdf_Page $page
-  * @param int $y
   * @param null invoice
+  *
+  * @return null
   */
   protected  function _insertTaxBox(&$page, $invoice)
   {
     $order = $invoice->getOrder();
-    $taxCollection = Mage::getModel('tax/sales_order_tax')->getCollection();
-    $taxCollection->addFieldToFilter('order_id',$order->getId());
+    
+    $taxes = $this->getFullTaxInfo($invoice);
     
     $y = $this->y;
     
@@ -547,31 +589,41 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
         );
     $lines[0][] = array(
             'text'  => Mage::helper("enhancedpdfinvoice")->__("Tax percentage"),
-            'feed'  => $this->_iLeftMargin+130,
+            'feed'  => $this->_iLeftMargin+75,
+            'align' => 'left',
+        );
+	$lines[0][] = array(
+            'text'  => Mage::helper("enhancedpdfinvoice")->__("Tax base amount"),
+            'feed'  => $this->_iLeftMargin+120,
             'align' => 'left',
         );
     $lines[0][] = array(
             'text'  => Mage::helper("enhancedpdfinvoice")->__("Tax amount"),
-            'feed'  => $this->_iLeftMargin+200,
+            'feed'  => $this->_iLeftMargin+220,
             'align' => 'left',
         );
     $i = 1;
-    if($taxCollection->count()) {
-      foreach($taxCollection as $taxClass) {
+    if(is_array($taxes)) {
+      foreach($taxes as $percent => $tax) {
         
         $lines[$i][] = array(
-            'text'  => $taxClass->getTitle(),
+            'text'  => $tax["title"],
             'feed'  => $this->_iLeftMargin+4,
             'align' => 'left',
         );
         $lines[$i][] = array(
-            'text'  => (float) $taxClass->getPercent() ."%",
-            'feed'  => $this->_iLeftMargin+130,
+            'text'  => $percent ."%",
+            'feed'  => $this->_iLeftMargin+75,
             'align' => 'left',
         );
         $lines[$i][] = array(
-            'text'  => $order->formatPriceTxt($taxClass->getBaseAmount()),
-            'feed'  => $this->_iLeftMargin+200,
+            'text'  => $order->formatPriceTxt($tax["tax_base_amount"]),
+            'feed'  => $this->_iLeftMargin+120,
+            'align' => 'left',
+        );
+        $lines[$i][] = array(
+            'text'  => $order->formatPriceTxt($tax["amount"]),
+            'feed'  => $this->_iLeftMargin+220,
             'align' => 'left',
         );
         $i++;
@@ -619,6 +671,8 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
   protected  function _insertFooterText(&$page, $store = null)
   {
     $this->y = $this->y ? $this->y : 100;
+    
+    $this->_setFontRegular($page, 7);
     
     $footerText = Mage::getStoreConfig(
       'bvt_enhancedpdfinvoice_config/custom_settings/footer_text', 
@@ -963,7 +1017,7 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
         $page->drawRectangle(275, $this->y, 560, $this->y-25);
 
         $this->y -= 15;
-        $this->_setFontBold($page, 12);
+        $this->_setFontBold($page, 10);
         $page->setFillColor(new Zend_Pdf_Color_GrayScale(0));
         $page->drawText(Mage::helper('sales')->__('Payment Method'), $this->_iLeftMargin + 10, $this->y, 'UTF-8');
         $page->drawText(Mage::helper('sales')->__('Shipping Method:'), 285, $this->y , 'UTF-8');
@@ -971,7 +1025,7 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
         $this->y -=10;
         $page->setFillColor(new Zend_Pdf_Color_GrayScale(1));
 
-        $this->_setFontRegular($page, 10);
+        $this->_setFontRegular($page, 8);
         $page->setFillColor(new Zend_Pdf_Color_GrayScale(0));
 
         $paymentLeft = $this->_iLeftMargin + 10;
@@ -1030,7 +1084,7 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
             $page->drawLine(400, $yShipments, 400, $yShipments - 10);
             //$page->drawLine(510, $yShipments, 510, $yShipments - 10);
 
-            $this->_setFontRegular($page, 9);
+            $this->_setFontRegular($page, 8);
             $page->setFillColor(new Zend_Pdf_Color_GrayScale(0));
             //$page->drawText(Mage::helper('sales')->__('Carrier'), 290, $yShipments - 7 , 'UTF-8');
             $page->drawText(Mage::helper('sales')->__('Title'), 290, $yShipments - 7, 'UTF-8');

@@ -20,6 +20,7 @@ Features
 * Option to show tax as amount or percent in item lines
 * Add Invoice-PDF to E-Mails
 * Credit memo pdf ready for GAS-Market
+* Option to show shipping address on invoice pdf
 
 Deutsch
 =======
@@ -41,9 +42,18 @@ Features
 * Option um die Steuer in den Artikel-Zeilen als Betrag oder Prozent anzuzeigen
 * Option um das Rechnungs-PDF bei den Rechnungs-Emails automatisch anzuhängen
 * Gutschrift-PDF für den DACH-Markt angepasst
+* Option zum Anzeigen der Versand-Adresse auf der Rechnung
 
 Changelog
 --------
+
+2014-09-12
+
+* added: tax base amount to tax box
+
+2014-04-07
+
+* added: option to print shipping address on invoice pdf
 
 2013-12-20
 
