@@ -47,6 +47,10 @@ Features
 Changelog
 --------
 
+2014-09-16
+
+* added: composer files
+
 2014-09-12
 
 * added: tax base amount to tax box

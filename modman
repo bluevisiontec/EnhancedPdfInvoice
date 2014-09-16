@@ -1,0 +1,3 @@
+app/code/community/BlueVisionTec/EnhancedPdfInvoice/* app/code/community/BlueVisionTec/EnhancedPdfInvoice/
+app/etc/modules/BlueVisionTec_EnhancedPdfInvoice.xml app/etc/modules/BlueVisionTec_EnhancedPdfInvoice.xml
+app/locale/de_DE/app/etc/modules/BlueVisionTec_EnhancedPdfInvoice.csv app/locale/de_DE/app/etc/modules/BlueVisionTec_EnhancedPdfInvoice.csv
