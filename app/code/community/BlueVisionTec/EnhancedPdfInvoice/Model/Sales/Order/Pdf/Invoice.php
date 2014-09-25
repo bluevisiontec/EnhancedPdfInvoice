@@ -547,12 +547,16 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
 		if($taxPercent == 19 || $taxPercent == 20) {
 			$taxes[$taxPercent]["tax_base_amount"] += $invoice->getShippingAmount();
 			$taxes[$taxPercent]["tax_base_amount"] += $order->getCodFeeInvoiced();
+			$taxes[$taxPercent]["tax_base_amount"] += $order->getPayment()->getAdditionalInformation("vaimo_klarna_fee");
+			$taxes[$taxPercent]["amount"] += $order->getPayment()->getAdditionalInformation("vaimo_klarna_fee_tax");
 		}
     }
     
     foreach($invoice->getAllItems() as $item) {
     	$percent = (float) $item->getOrderItem()->getTaxPercent();
     	$taxes[$percent]["tax_base_amount"] += $item->getRowTotal();
+    	$taxes[$percent]["tax_base_amount"] -= $item->getDiscountAmount();
+    	$taxes[$percent]["tax_base_amount"] += $item->getHiddenTaxAmount();
     }
     
     
