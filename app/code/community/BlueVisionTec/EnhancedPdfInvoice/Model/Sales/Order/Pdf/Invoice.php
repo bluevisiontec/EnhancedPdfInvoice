@@ -548,7 +548,8 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
 			$taxes[$taxPercent]["tax_base_amount"] += $invoice->getShippingAmount();
 			$taxes[$taxPercent]["tax_base_amount"] += $order->getCodFeeInvoiced();
 			$taxes[$taxPercent]["tax_base_amount"] += $order->getPayment()->getAdditionalInformation("vaimo_klarna_fee");
-			$taxes[$taxPercent]["amount"] += $order->getPayment()->getAdditionalInformation("vaimo_klarna_fee_tax");
+			$taxes[$taxPercent]["tax_base_amount"] += $order->getPayment()->getAdditionalInformation("invoice_fee_exluding_vat");
+// 			$taxes[$taxPercent]["amount"] += $order->getPayment()->getAdditionalInformation("vaimo_klarna_fee_tax");
 		}
     }
     
@@ -609,6 +610,10 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Sales_Order_Pdf_Invoice extends Mag
     $i = 1;
     if(is_array($taxes)) {
       foreach($taxes as $percent => $tax) {
+      
+		if(!$tax["title"] && !$tax["amount"] && !$tax["tax_base_amount"]) {
+			continue;
+		}
         
         $lines[$i][] = array(
             'text'  => $tax["title"],

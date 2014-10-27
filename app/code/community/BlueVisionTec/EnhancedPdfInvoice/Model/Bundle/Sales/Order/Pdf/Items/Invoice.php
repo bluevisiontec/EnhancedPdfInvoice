@@ -75,14 +75,20 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Bundle_Sales_Order_Pdf_Items_Invoic
             if ($_item->getOrderItem()->getParentItem()) {
                 $feed = 100;
                 $name = $this->getValueHtml($_item);
+                $name = Mage::helper('core/string')->str_split($name, 80, true, true);
+                $fontSize = 7;
             } else {
                 $feed = 105;
                 $name = $_item->getName();
+                $name = Mage::helper('core/string')->str_split($name, 60, true, true);
+                $fontSize = 9;
             }
             $line[] = array(
-                'text'  => Mage::helper('core/string')->str_split($name, 35, true, true),
-                'feed'  => $feed
+                'text'  => $name,
+                'feed'  => $feed,
+                'font_size' => $fontSize
             );
+            
 
             // draw SKUs
             if (!$_item->getOrderItem()->getParentItem()) {
@@ -99,7 +105,7 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Bundle_Sales_Order_Pdf_Items_Invoic
 
             // draw prices
             if ($this->canShowPriceInfo($_item)) {
-                $price = $order->formatPriceTxt($_item->getPrice());
+                $price = $order->formatPriceTxt($_item->getPriceInclTax());
                 $line[] = array(
                     'text'  => $price,
                     'feed'  => 395,
@@ -114,23 +120,23 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Bundle_Sales_Order_Pdf_Items_Invoic
 
                 if(Mage::getStoreConfig("bvt_enhancedpdfinvoice_config/item_settings/tax_display") == "percent") {
                   // draw Tax
-                  $lines[0][] = array(
-                      'text'  => (float) $item->getOrderItem()->getTaxPercent() . "%",
+                  $line[] = array(
+                      'text'  => (float) $_item->getOrderItem()->getTaxPercent() . "%",
                       'feed'  => 495,
                       'font'  => 'bold',
                       'align' => 'right'
                   );          
                 } elseif(Mage::getStoreConfig("bvt_enhancedpdfinvoice_config/item_settings/tax_display") == "amount") {
                   // draw Tax
-                  $lines[0][] = array(
-                      'text'  => $order->formatPriceTxt($item->getTaxAmount()),
+                  $line[] = array(
+                      'text'  => $order->formatPriceTxt($_item->getTaxAmount()),
                       'feed'  => 495,
                       'font'  => 'bold',
                       'align' => 'right'
                   );
                 } 
 
-                $row_total = $order->formatPriceTxt($_item->getRowTotal());
+                $row_total = $order->formatPriceTxt($_item->getRowTotalInclTax());
                 $line[] = array(
                     'text'  => $row_total,
                     'feed'  => 565,
@@ -151,7 +157,8 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Bundle_Sales_Order_Pdf_Items_Invoic
                     $lines[][] = array(
                         'text'  => Mage::helper('core/string')->str_split(strip_tags($option['label']), 40, true, true),
                         'font'  => 'italic',
-                        'feed'  => 35
+                        'feed'  => 35,
+                        'font_size' => 9
                     );
 
                     if ($option['value']) {
@@ -168,7 +175,8 @@ class BlueVisionTec_EnhancedPdfInvoice_Model_Bundle_Sales_Order_Pdf_Items_Invoic
 
                         $lines[][] = array(
                             'text'  => $text,
-                            'feed'  => 40
+                            'feed'  => 40,
+                            'size'	=> 7
                         );
                     }
 
